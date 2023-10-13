@@ -1,4 +1,5 @@
 ///<reference path="components/RootObject.ts"/>
+///<reference path="components/Component.ts"/>
 module test
 {
     import IGameObject = components.IGameObject;
@@ -25,7 +26,7 @@ module test
             testObject1.addComponent(TestComponent);
             scene.addChild(testObject1);
 
-            //scene.start();
+            scene.start();
 
             let testComponent:TestComponent = scene.getComponentInChildren(TestComponent);
 

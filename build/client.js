@@ -117,6 +117,9 @@ var components;
             while (this._newComponents.length > 0) {
                 this._newComponents.shift().init(this);
             }
+            if (!this._enabled) {
+                return;
+            }
             for (var _i = 0, _a = this._components; _i < _a.length; _i++) {
                 var component = _a[_i];
                 component.update(deltaMs);
@@ -125,6 +128,62 @@ var components;
         return GameObject;
     }());
     components.GameObject = GameObject;
+})(components || (components = {}));
+///<reference path="GameObject.ts"/>
+var components;
+(function (components) {
+    var RootObject = /** @class */ (function (_super) {
+        __extends(RootObject, _super);
+        function RootObject() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            //scene updating is running
+            _this._running = false;
+            //enterFrame() function bind to 'this'
+            _this._enterFrameBind = _this.enterFrame.bind(_this);
+            //last enterFrame() call time
+            _this._lastUpdateTime = 0;
+            return _this;
+        }
+        /**
+         * Start frame updating. Will be ignored if already running
+         */
+        RootObject.prototype.start = function () {
+            if (!this._running) {
+                this._running = true;
+                this._lastUpdateTime = 0;
+                requestAnimationFrame(this._enterFrameBind);
+            }
+        };
+        /**
+         * Stop frame updating. Will be ignored if not running
+         */
+        RootObject.prototype.stop = function () {
+            this._running = false;
+        };
+        RootObject.prototype.enterFrame = function () {
+            if (!this._running) {
+                return;
+            }
+            if (this._enabled) {
+                var deltaMs = void 0;
+                var currTime = Date.now();
+                if (this._lastUpdateTime == 0) {
+                    deltaMs = 0;
+                }
+                else {
+                    deltaMs = currTime - this._lastUpdateTime;
+                }
+                this._lastUpdateTime = currTime;
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var child = _a[_i];
+                    child.sceneUpdate(deltaMs);
+                }
+            }
+            requestAnimationFrame(this._enterFrameBind);
+        };
+        return RootObject;
+    }(components.GameObject));
+    components.RootObject = RootObject;
 })(components || (components = {}));
 var components;
 (function (components) {
@@ -149,6 +208,42 @@ var components;
     }());
     components.Component = Component;
 })(components || (components = {}));
+///<reference path="components/RootObject.ts"/>
+///<reference path="components/Component.ts"/>
+var test;
+(function (test_1) {
+    var GameObject = components.GameObject;
+    var Component = components.Component;
+    var RootObject = components.RootObject;
+    var TestComponent = /** @class */ (function (_super) {
+        __extends(TestComponent, _super);
+        function TestComponent() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        TestComponent.prototype.init = function (gameObject) {
+            console.log("TestComponent: init()", gameObject);
+        };
+        TestComponent.prototype.update = function (deltaMs) {
+            console.log("TestComponent: update()", deltaMs);
+        };
+        return TestComponent;
+    }(Component));
+    test_1.TestComponent = TestComponent;
+    var test = /** @class */ (function () {
+        function test() {
+            var scene = new RootObject();
+            var testObject1 = new GameObject();
+            testObject1.addComponent(TestComponent);
+            scene.addChild(testObject1);
+            //scene.start();
+            var testComponent = scene.getComponentInChildren(TestComponent);
+            console.log(testComponent);
+        }
+        return test;
+    }());
+    test_1.test = test;
+})(test || (test = {}));
+new test.test();
 var utils;
 (function (utils) {
     var Dictionary = /** @class */ (function () {
@@ -209,92 +304,4 @@ var utils;
     }());
     utils.Dictionary = Dictionary;
 })(utils || (utils = {}));
-var components;
-(function (components) {
-    var RootObject = /** @class */ (function (_super) {
-        __extends(RootObject, _super);
-        function RootObject() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            //scene updating is running
-            _this._running = false;
-            //enterFrame() function bind to 'this'
-            _this._enterFrameBind = _this.enterFrame.bind(_this);
-            //last enterFrame() call time
-            _this._lastUpdateTime = 0;
-            return _this;
-        }
-        /**
-         * Start frame updating. Will be ignored if already running
-         */
-        RootObject.prototype.start = function () {
-            if (!this._running) {
-                this._running = true;
-                this._lastUpdateTime = 0;
-                requestAnimationFrame(this._enterFrameBind);
-            }
-        };
-        /**
-         * Stop frame updating. Will be ignored if not running
-         */
-        RootObject.prototype.stop = function () {
-            this._running = false;
-        };
-        RootObject.prototype.enterFrame = function () {
-            if (!this._running) {
-                return;
-            }
-            var deltaMs;
-            var currTime = Date.now();
-            if (this._lastUpdateTime == 0) {
-                deltaMs = 0;
-            }
-            else {
-                deltaMs = currTime - this._lastUpdateTime;
-            }
-            this._lastUpdateTime = currTime;
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                var child = _a[_i];
-                child.sceneUpdate(deltaMs);
-            }
-            requestAnimationFrame(this._enterFrameBind);
-        };
-        return RootObject;
-    }(components.GameObject));
-    components.RootObject = RootObject;
-})(components || (components = {}));
-///<reference path="components/RootObject.ts"/>
-var test;
-(function (test_1) {
-    var GameObject = components.GameObject;
-    var Component = components.Component;
-    var RootObject = components.RootObject;
-    var TestComponent = /** @class */ (function (_super) {
-        __extends(TestComponent, _super);
-        function TestComponent() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        TestComponent.prototype.init = function (gameObject) {
-            console.log("TestComponent: init()", gameObject);
-        };
-        TestComponent.prototype.update = function (deltaMs) {
-            console.log("TestComponent: update()", deltaMs);
-        };
-        return TestComponent;
-    }(Component));
-    test_1.TestComponent = TestComponent;
-    var test = /** @class */ (function () {
-        function test() {
-            var scene = new RootObject();
-            var testObject1 = new GameObject();
-            testObject1.addComponent(TestComponent);
-            scene.addChild(testObject1);
-            //scene.start();
-            var testComponent = scene.getComponentInChildren(TestComponent);
-            console.log(testComponent);
-        }
-        return test;
-    }());
-    test_1.test = test;
-})(test || (test = {}));
-new test.test();
 //# sourceMappingURL=client.js.map

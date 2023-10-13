@@ -1,3 +1,4 @@
+///<reference path="GameObject.ts"/>
 module components
 {
     export class RootObject extends GameObject
@@ -37,23 +38,21 @@ module components
             {
                 return;
             }
-            let deltaMs:number;
+            if(this._enabled) {
+                let deltaMs: number;
 
-            const currTime:number = Date.now();
+                const currTime: number = Date.now();
 
-            if(this._lastUpdateTime == 0)
-            {
-                deltaMs = 0;
-            }
-            else
-            {
-                deltaMs = currTime - this._lastUpdateTime;
-            }
-            this._lastUpdateTime = currTime;
+                if (this._lastUpdateTime == 0) {
+                    deltaMs = 0;
+                } else {
+                    deltaMs = currTime - this._lastUpdateTime;
+                }
+                this._lastUpdateTime = currTime;
 
-            for(let child of this._children)
-            {
-                (child as GameObject).sceneUpdate(deltaMs);
+                for (let child of this._children) {
+                    (child as GameObject).sceneUpdate(deltaMs);
+                }
             }
             requestAnimationFrame(this._enterFrameBind);
         }

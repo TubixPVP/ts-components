@@ -9,7 +9,7 @@ module components {
         protected _parent: IGameObject = null;
 
 
-        private _enabled: boolean = true;
+        protected _enabled: boolean = true;
 
         public get enabled(): boolean {
             return this._enabled;
@@ -103,12 +103,14 @@ module components {
             return this._parent.getComponentInParent(type);
         }
 
-        public sceneUpdate(deltaMs:number): void {
+        public sceneUpdate(deltaMs: number): void {
             while (this._newComponents.length > 0) {
                 this._newComponents.shift().init(this);
             }
-            for(let component of this._components)
-            {
+            if (!this._enabled) {
+                return;
+            }
+            for (let component of this._components) {
                 component.update(deltaMs);
             }
         }
